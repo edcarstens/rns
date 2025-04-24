@@ -1,0 +1,17 @@
+//.from rnsv_const_base import rnsv_const_base
+//.class rnsv_const(rnsv_const_base):{
+//. def declare_and_assign_me(self):{
+//.  +self.parent.declarations
+@self.parent.name@ @self.name@;
+//.  -self.parent.declarations
+//.  +self.parent.comb
+//.  idx = 0
+//.  for m in self.base:{
+//.   xoh = self.xmods[idx].onehot()
+assign @self.name@.x@m@ = @m@'b@xoh@;
+//.   idx += 1
+//.  }
+//.  -self.parent.comb
+//. }
+//.}
+

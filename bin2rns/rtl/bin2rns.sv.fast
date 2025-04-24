@@ -1,0 +1,82 @@
+//.base = [8,9,5,7,11,13,17]
+//.rns0 = rnsv('rns0', base)
+//.rns1 = rnsv('rns1', base[1:])  ## exclude 8 from this base
+//.+sec.bin2rns('bin2rns.sv')
+// rnsv_bin2rns (Binary-to-RNS converter)
+//.#fast()
+//.include_structs(rns0.base, "rns0")
+//.include_structs(rns1.base, "rns1")
+//.rns0.includes > ''
+module bin2rns(
+	       output	    rns0 y,
+	       output logic ready,
+	       input logic [17:0] x,
+	       input logic  clk,
+	       input logic  rst
+	       );
+   //.rns0('no declaration').y
+   //.rns0.declarations > ''
+   logic [2:0]			count;
+   logic [5:0]			xin1,xin2;
+   logic			final_sum;
+   //.rns0.instances > ''
+   //.rns0.comb > ''
+   assign @rns0.y8@ = @rns0.y*8@;
+   assign @rns0.acc2_8@ = @rns0.acc2*8@;
+   always_comb begin
+      case (x[17:15])
+	//.for i in range(8):{
+	3'd@i@: @rns0.xin0_rns@ = @rns0(i)@;
+	//.}
+      endcase // case (x[17:15])
+      case (x[8:6])
+	//.for i in range(8):{
+	3'd@i@: @rns0.xin1_rns@ = @rns0(i)@;
+	//.}
+      endcase // case (x[8:6])
+      case (xin1[5:3])
+	//.for i in range(8):{
+	3'd@i@: @rns0.xin2_rns@ = @rns0.y8 + i@;
+	//.}
+      endcase // case (xin1[5:3])
+      case (xin2[5:3])
+	//.for i in range(8):{
+	3'd@i@: @rns0.xin3_rns@ = @rns0.acc2_8 + i@;
+	//.}
+      endcase // case (xin2[5:3])
+   end
+   assign @rns0.final_sum_rns@ = @rns0.y*512 + rns0.acc2@;
+   assign ready = (count == 3'd3);
+   assign final_sum = (count == 3'd2);
+   always_ff @@(posedge clk) begin
+      if (rst) begin
+	 count <= 3'b0;
+	 xin1 <= x[14:9];
+	 xin2 <= x[5:0];
+	 y <= xin0_rns; // Note: y and acc2 have already been declared
+	 acc2 <= xin1_rns;
+      end else if (! final_sum) begin
+	 count <= count + 3'd1;
+	 xin1 <= {xin1[2:0], 3'b0};
+	 xin2 <= {xin2[2:0], 3'b0};
+	 y <= xin2_rns;
+	 acc2 <= xin3_rns;
+      end else begin
+	 count <= count + 3'd1;
+	 y <= final_sum_rns;
+	 acc2 <= @rns0(0)@; // not used in this stage
+      end
+   end
+
+   //.if dumpvcd:{
+   initial begin
+      $dumpfile("dump.vcd");
+      $dumpvars;
+   end      
+   //.}
+
+   // SV Assertions
+   //.rns0.sva > ''
+   
+endmodule // bin2rns
+//.-sec.bin2rns

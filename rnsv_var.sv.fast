@@ -1,0 +1,63 @@
+//.from rns import rns
+//.from rnsv_var_base import rnsv_var_base
+//.class rnsv_var(rnsv_var_base):{
+//. def __init__(self, name, parent):{
+//.  super().__init__(name, parent)
+//.  self.xmods = [rnsv_xmod(f"{self.name}.x{m}", m, self) for m in self.base]
+//. }
+//. def declare(self, name):{
+//.  var = self.create(name)
+//.  +self.parent.declarations
+@self.parent.name@ @name@;
+//.  -self.parent.declarations
+//.  var.declared = True
+//.  return var
+//. }
+//. def map2comb(self, op, x=None):{
+//.  +self.parent.comb
+//-----------------------------------------------------------------
+//.  if self.comb_comment:{
+// @self.comb_comment@
+//.   self.comb_comment = ''
+//.  }
+//.  if x is None:{
+// @op@()
+//.  }
+//.  else:{
+// @op@(@x@)
+//.  }
+//.  self.n = self.parent.gen_var_name()
+//.  -self.parent.comb
+//.  return self.declare(self.n)
+//. } # end def map2comb
+//. def connect_inst(self, other, modname, start, stop, step):{
+//.  n = self.parent.gen_var_name()
+//.  instname = "inst_" + n
+//.  +self.parent.instances
+rnsv_@modname@ @instname@(.z(@n@), .x(@self.name@), .y(@other.name@));
+//.  -self.parent.instances
+//.  rv = self.declare(n)
+//.  rv.my_slice = slice(start,stop,step) # propogate slice
+//.  return rv
+//. } # end def connect_inst
+//. def __getitem__(self, idx):{
+//.  self.n = self.parent.gen_var_name()
+//.  if isinstance(idx, slice):{
+//.   rv = self.copy()
+//.   rv.my_slice = idx
+//.   return rv
+//.  }
+//.  start,stop,step = self.get_slice(len(self.xmods))
+//.  idxs = []
+//.  +self.parent.comb
+//.  for i in range(start, stop, step):{
+assign @self.n@.x@self.xmods[i].m@ = @self.xmods[idx].map_to_mod(self.xmods[i].m)@;
+//.   idxs.append(i)
+//.  }
+//.  -self.parent.comb
+//.  self._call_nops(idxs)
+//.  rv = self.declare(self.n)
+//.  rv.my_slice = self.my_slice # propagate slice
+//.  return rv
+//. } # end def __getitem__
+//.} # end class

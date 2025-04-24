@@ -1,0 +1,55 @@
+//.from xmod import xmod
+//.def modmul(m):{
+//. ohrange = f"{m-1}:0"
+//. zero = f"{m}'b{xmod(0,m).onehot()}"
+//. one =  f"{m}'b{xmod(1,m).onehot()}"
+//. outsec = Section(f"modmul_{m}.sv")
+//. +outsec()
+module modmul_@m@(output logic [@ohrange@] z,
+	          input logic  [@ohrange@] x,y
+);
+   always_comb begin
+      case (x)
+	    @zero@: z = @zero@; // 0 -> 0
+	    @one@: z = y; // 1 -> y
+	    //.for x in range(2,m):{
+	    //.xm = xmod(x,m)
+	    //.ya = [[] for i in range(m)] # list of empty lists
+	    //.for y in range(m):{
+	    //. ya[(x*y) % m].append(f"y[{y}]")
+	    //.} # end for y
+	    //.for y in range(m):{
+	    //. if ya[y]:{
+	    //.  ya[y] = '|'.join(ya[y])
+	    //. }
+	    //. else:{
+	    //.  ya[y] = "1'b0"
+	    //. }
+	    //.} # end for y
+	    //.ya.reverse()
+	    @m@'b@xm.onehot()@: z = {@','.join(ya)@};
+	    //.} # end for x
+	    default: z = @m@'b0; // indicates an error
+      endcase // case (x)
+   end
+endmodule // modmul_@m@
+//. -outsec
+//.}
+
+//.def rnsv_modmul(my_rns):{
+//. base = my_rns.base
+//. name = my_rns.name
+//. +sec.rnsv_modmul("rnsv_modmul.sv")
+module rnsv_modmul(output @name@ z,
+		   input @name@ x,y);
+
+//. for m in base:{
+//.  modmul(m)
+   modmul_@m@ inst_modmul_@m@(.z(z.x@m@), .x(x.x@m@), .y(y.x@m@));
+//. } # end for m
+endmodule // rnsv_modmul
+//. -sec.rnsv_modmul
+//. +my_rns.includes
+`include "rnsv_modmul.sv"
+//. -my_rns.includes
+//.}

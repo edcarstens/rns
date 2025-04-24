@@ -1,0 +1,20 @@
+//.+fast
+//.def include_structs(base, name):{
+//. if not len(sec.structs.getText()):{
+//. +sec.structs("structs.sv")
+`ifndef STRUCT_DEFINED
+`define STRUCT_DEFINED
+//.sec.structs > 'structs'
+`endif
+//. -sec.structs
+`include "structs.sv"
+//. } # end if
+//.+sec.structs.structs
+typedef struct packed {
+   //.for m in base:{
+   logic [@m-1@:0] x@m@;
+   //.}
+} @name@;
+//.-sec.structs.structs
+//.} # end def
+//.-fast

@@ -1,0 +1,59 @@
+///fast.include("rnsv_xmod.sv.fast")
+///fast.include("rnsv_var.sv.fast")
+///fast.include("rnsv_const.sv.fast")
+///fast.include("structs.sv.fast")
+///fast.include("rnsv_modadd.sv.fast")
+///fast.include("rnsv_modmul.sv.fast")
+//.+fast
+//.class rnsv:{
+//. def __init__(self, name, base):{
+//.  self.name = name
+//.  self.base = base
+//.  self.constants = {}
+//.  self.var_num = 0
+//.  self.do_declaration = True
+//.  ## Define sections
+//.  self.includes = Section(f"{name}_includes")
+//.  self.declarations = Section(f"{name}_declarations")
+//.  self.instances = Section(f"{name}_instances")
+//.  self.comb = Section(f"{name}_comb")
+//.  self.sva = Section(f"{name}_sva")
+//. }
+//. def gen_var_name(self):{
+//.  rv = f"_{self.name}_{self.var_num}"
+//.  self.var_num += 1
+//.  return rv
+//. }
+//. def __getattr__(self, name):{
+//.  """
+//.  RNSV variables are attributes of rnsv class instance
+//.  """
+//.  rv = rnsv_var(name, self)
+//.  setattr(self, name, rv)
+//.  if self.do_declaration:{
+//.   +self.declarations
+@self.name@ @name@;
+//.   -self.declarations
+//.   rv.declared = True
+//.  }
+//.  self.do_declaration = True
+//.  return rv
+//. }
+//. def __call__(self, x):{
+//.  """
+//.  RNSV constants are tracked by constants dict
+//.  """
+//.  if isinstance(x, str):{
+//.   if x == 'no declaration':{
+//.    self.do_declaration = False
+//.   }
+//.   return self
+//.  }
+//.  assert(isinstance(x, int))
+//.  if x not in self.constants:{
+//.   self.constants[x] = rnsv_const(x, self)
+//.  }
+//.  return self.constants[x].name
+//. }
+//.} # end class
+//.-fast

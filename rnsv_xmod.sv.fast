@@ -1,0 +1,42 @@
+//.from rns import rns
+//.from rnsv_xmod_base import rnsv_xmod_base
+//.class rnsv_xmod(rnsv_xmod_base):{
+//.def map2comb(self, fct, op, x=None):{
+//. m = self.m
+//. if isinstance(self.parent, rnsv_var):{
+//.  n = self.parent.n + ".x" + str(m)
+//. }
+//. else:{
+//.  n = self.parent.gen_var_name()
+//.  +self.parent.declarations
+logic [@m-1@:0] @n@;
+//.  -self.parent.declarations
+//. }
+//. +self.parent.comb
+//. if (op == 'mul') and (x % m == 0):{
+assign @n@ = @m@'d1;
+//. }
+//. elif (op == 'nop'):{
+assign @n@ = @self.name@;
+//. }
+//. else:{
+//.  r = super().op_map(fct)
+assign @n@ = {@','.join(r)@};
+//. }
+//. -self.parent.comb
+//. return self.create(n)
+//.} # end def map2comb
+//.def connect_inst(self, other, modname):{
+//. if not isinstance(self.parent, rnsv_var):{
+//.  n = self.parent.gen_var_name()
+//.  +self.parent.declarations
+logic [@self.m-1@:0] @n@;
+//.  -self.parent.declarations
+//.  +self.parent.instances
+//.  instname = "inst_" + n
+@modname@_@self.m@ @instname@(.z(@n@), .x(@self.name@), .y(@other.name@));
+//.  -self.parent.instances
+//.  return self.create(n)
+//. }
+//.} # end def connect_inst
+//.} # end class

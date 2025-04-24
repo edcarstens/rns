@@ -1,0 +1,56 @@
+//.from xmod import xmod
+//.def modadd(m):{
+//. ohrange = f"{m-1}:0"
+//. zero = f"{m}'b{xmod(0,m).onehot()}"
+//. outsec = Section(f"modadd_{m}.sv")
+//. +outsec()
+module modadd_@m@(output logic [@ohrange@] z,
+	          input logic  [@ohrange@] x,y
+);
+   always_comb begin
+      case (x)
+	    @zero@: z = y; // 0 -> y
+	    //.for x in range(1,m):{
+	    //.xm = xmod(x,m)
+	    //.ya = [[] for i in range(m)] # list of empty lists
+	    //.for y in range(m):{
+	    //. ya[(x+y) % m].append(f"y[{y}]")
+	    //.} # end for y
+	    //.for y in range(m):{
+	    //. if ya[y]:{
+	    //.  ya[y] = '|'.join(ya[y])
+	    //. }
+	    //. else:{
+	    //.  ya[y] = "1'b0"
+	    //. }
+	    //.} # end for y
+	    //.ya.reverse()
+	    @m@'b@xm.onehot()@: z = {@','.join(ya)@};
+	    //.} # end for x
+	    default: z = @m@'b0; // indicates an error
+      endcase // case (x)
+   end
+endmodule // modadd_@m@
+//. -outsec
+//.}
+
+//.def rnsv_modadd(my_rns):{
+//. base = my_rns.base
+//. name = my_rns.name
+//. +sec.rnsv_modadd("rnsv_modadd.sv")
+//.for m in base:{
+`include "modadd_@m@.sv"
+//.}
+module rnsv_modadd(output @name@ z,
+		   input @name@ x,y);
+
+//. for m in base:{
+//.  modadd(m)
+   modadd_@m@ inst_modadd_@m@(.z(z.x@m@), .x(x.x@m@), .y(y.x@m@));
+//. } # end for m
+endmodule // rnsv_modadd
+//. -sec.rnsv_modadd
+//. +my_rns.includes
+`include "rnsv_modadd.sv"
+//. -my_rns.includes
+//.}
