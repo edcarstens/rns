@@ -1,5 +1,6 @@
 ///fast.include("rnsv_xmod.sv.fast")
 ///fast.include("rnsv_var.sv.fast")
+///fast.include("rnsv_xmod_const.sv.fast")
 ///fast.include("rnsv_const.sv.fast")
 ///fast.include("structs.sv.fast")
 ///fast.include("rnsv_modadd.sv.fast")
@@ -10,6 +11,7 @@
 //.  self.name = name
 //.  self.base = base
 //.  self.constants = {}
+//.  self.xmod_constants = {}
 //.  self.var_num = 0
 //.  self.do_declaration = True
 //.  ## Define sections
@@ -24,6 +26,21 @@
 //.  self.var_num += 1
 //.  return rv
 //. }
+//. def xmod(self, name, m, parent=None, do_declaration=True):{
+//.  """
+//.  Returns a new XMOD variable with mod m
+//.  OR returns an xmod constant if name is type int instead of str
+//.  """
+//.  if isinstance(name, str):{
+//.   return rnsv_xmod(name, m, self, parent, do_declaration)
+//.  }
+//.  assert(isinstance(name, int))
+//.  x = name
+//.  if x not in self.xmod_constants:{
+//.   self.xmod_constants[x] = rnsv_xmod_const(x, m, self)
+//.  }
+//.  return self.xmod_constants[x].name
+//. }
 //. def __getattr__(self, name):{
 //.  """
 //.  RNSV variables are attributes of rnsv class instance
@@ -34,7 +51,7 @@
 //.   +self.declarations
 @self.name@ @name@;
 //.   -self.declarations
-//.   rv.declared = True
+//.#   rv.declared = True
 //.  }
 //.  self.do_declaration = True
 //.  return rv

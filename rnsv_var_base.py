@@ -4,7 +4,7 @@ class rnsv_var_base:
         self.base = parent.base
         self.name = name
         self.parent = parent
-        self.declared = False
+#        self.declared = False
         self.includes = parent.includes
         self.declarations = parent.declarations
         self.instances = parent.instances
@@ -46,7 +46,7 @@ class rnsv_var_base:
     def copy(self):
         rv = self.create(self.name)
         rv.parent = self.parent
-        rv.declared = self.declared
+#        rv.declared = self.declared
         rv.includes = self.includes
         rv.declarations = self.declarations
         rv.instances = self.instances
@@ -82,6 +82,7 @@ class rnsv_var_base:
     def _call_nops(self, idxs):
         for idx in range(len(self.xmods)):
             if idx not in idxs:
+                print(f"_call_nops: {idx} {self.xmods[idx].parent}")
                 self.xmods[idx].nop()
     def __neg__(self):
         #print("__neg__")
@@ -96,6 +97,9 @@ class rnsv_var_base:
         self._call_nops(idxs)
         rv.my_slice = self.my_slice  # propagate the slice
         return rv
+    def __lshift__(self, other):
+        "Subclass must define this"
+        pass
     def __add__(self, other):
         if isinstance(other, int):
             rv = self.map2comb('add', other)
@@ -111,11 +115,15 @@ class rnsv_var_base:
             # hookup modadd modules
             start,stop,step = self.get_slice(len(self.xmods), other)
             return self.connect_inst(other, "modadd", start,stop,step)
+        elif isinstance(other, type(self.xmods[0])):
+            return self + (self << other)
         else:
             raise Exception(f"{other} type is not int or rnsv_var")
     def __radd__(self, other):
         return self + other
     def __sub__(self, other):
+        if isinstance(other, type(self.xmods[0])):
+            return self - (self << other)
         return self + (-other)
     def __rsub__(self, other):
         return -self + other
@@ -133,6 +141,8 @@ class rnsv_var_base:
         elif isinstance(other, type(self)):
             start,stop,step = self.get_slice(len(self.xmods), other)
             return self.connect_inst(other, "modmul", start,stop,step)
+        elif isinstance(other, type(self.xmods[0])):
+            return self * (self << other)
         else:
             raise Exception(f"{other} type is not int or rnsv_var")
     def __rmul__(self, other):
@@ -158,3 +168,9 @@ class rnsv_var_base:
         for idx in range(start, stop, step):
             bits.append(self.xmods[idx] == other)
         return ' & '.join(bits)
+    def __ne__(self, other):
+        start,stop,step = self.get_slice(len(self.xmods), other)
+        bits = []
+        for idx in range(start, stop, step):
+            bits.append(self.xmods[idx] == other)
+        return ' | '.join(bits)

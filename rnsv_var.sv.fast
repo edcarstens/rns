@@ -3,14 +3,14 @@
 //.class rnsv_var(rnsv_var_base):{
 //. def __init__(self, name, parent):{
 //.  super().__init__(name, parent)
-//.  self.xmods = [rnsv_xmod(f"{self.name}.x{m}", m, self) for m in self.base]
+//.  self.xmods = [rnsv_xmod(f"{self.name}.x{m}", m, self.parent, self, False) for m in self.base]
 //. }
 //. def declare(self, name):{
 //.  var = self.create(name)
 //.  +self.parent.declarations
 @self.parent.name@ @name@;
 //.  -self.parent.declarations
-//.  var.declared = True
+//.#  var.declared = True
 //.  return var
 //. }
 //. def map2comb(self, op, x=None):{
@@ -41,17 +41,24 @@ rnsv_@modname@ @instname@(.z(@n@), .x(@self.name@), .y(@other.name@));
 //.  return rv
 //. } # end def connect_inst
 //. def __getitem__(self, idx):{
-//.  self.n = self.parent.gen_var_name()
 //.  if isinstance(idx, slice):{
 //.   rv = self.copy()
 //.   rv.my_slice = idx
 //.   return rv
 //.  }
+//.  rv = self.xmods[idx].copy()
+//.  rv.parent = None  ## let xmod be independent now for doing its own operations
+//.  return rv
+//. } # end def __getitem__
+//. def __lshift__(self, other):{
+//.  print('lshift')
+//.  assert(isinstance(other, type(self.xmods[0])))
+//.  self.n = self.parent.gen_var_name()
 //.  start,stop,step = self.get_slice(len(self.xmods))
 //.  idxs = []
 //.  +self.parent.comb
 //.  for i in range(start, stop, step):{
-assign @self.n@.x@self.xmods[i].m@ = @self.xmods[idx].map_to_mod(self.xmods[i].m)@;
+assign @self.n@.x@self.xmods[i].m@ = @other.map_to_mod(self.xmods[i].m)@;
 //.   idxs.append(i)
 //.  }
 //.  -self.parent.comb
@@ -59,5 +66,5 @@ assign @self.n@.x@self.xmods[i].m@ = @self.xmods[idx].map_to_mod(self.xmods[i].m
 //.  rv = self.declare(self.n)
 //.  rv.my_slice = self.my_slice # propagate slice
 //.  return rv
-//. } # end def __getitem__
+//. } # end def __lshift__
 //.} # end class

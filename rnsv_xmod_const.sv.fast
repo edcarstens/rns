@@ -1,0 +1,12 @@
+//.from rnsv_xmod_const_base import rnsv_xmod_const_base
+//.class rnsv_xmod_const(rnsv_xmod_const_base):{
+//. def declare_and_assign_me(self):{
+//.  +self.parent.declarations
+logic [@self.m-1@:0] @self.name@;
+//.  -self.parent.declarations
+//.  +self.parent.comb
+//.  xoh = self.onehot()
+assign @self.name@ = @self.m@'b@xoh@;
+//.  -self.parent.comb
+//. } # end def
+//.} # end class

@@ -1,8 +1,9 @@
 from rns import rns
 class rnsv_xmod_base:
-    def __init__(self, name, m, parent):
+    def __init__(self, name, m, rnsv_base, parent=None, do_declaration=True):
         self.name = name
         self.m = m
+        self.rnsv_base = rnsv_base
         self.parent = parent
     def __str__(self):
         return self.name
@@ -33,8 +34,9 @@ class rnsv_xmod_base:
         :return:
         """
         pass
-    def create(self, name):
-        return type(self)(name, self.m, self.parent)
+    def create(self, name, _m=0):
+        m = _m if _m else self.m
+        return type(self)(name, m, self.rnsv_base, self.parent)
     def copy(self):
         return self.create(self.name)
     def connect_inst(self, other, modname):
@@ -71,7 +73,7 @@ class rnsv_xmod_base:
         return self * other
     def __truediv__(self, other):
         if isinstance(other, int):
-            x = rns(other, self.base)
+            x = rns(other, [self.m])
             xi = x.mulinv()
             (mrv,mrb,mri) = xi.mixed_radix()
             #print(f"mri={mri}")
