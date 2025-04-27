@@ -1,3 +1,4 @@
+///fast.include("xmodv.sv.fast")
 ///fast.include("rnsv_xmod.sv.fast")
 ///fast.include("rnsv_var.sv.fast")
 ///fast.include("rnsv_xmod_const.sv.fast")
@@ -26,13 +27,15 @@
 //.  self.var_num += 1
 //.  return rv
 //. }
-//. def xmod(self, name, m, parent=None, do_declaration=True):{
+//.# def xmod(self, name, m, parent=None, do_declaration=True):{
+//. def xmod(self, name, m):{
 //.  """
 //.  Returns a new XMOD variable with mod m
 //.  OR returns an xmod constant if name is type int instead of str
 //.  """
 //.  if isinstance(name, str):{
-//.   return rnsv_xmod(name, m, self, parent, do_declaration)
+//.#   return rnsv_xmod(name, m, self, parent, do_declaration)
+//.   return xmodv(name, m, self)
 //.  }
 //.  assert(isinstance(name, int))
 //.  x = name

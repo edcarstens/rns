@@ -5,6 +5,7 @@ class rnsv_xmod_base:
         self.m = m
         self.rnsv_base = rnsv_base
         self.parent = parent
+        self.comb_comment = ""
     def __str__(self):
         return self.name
     def op_map(self, fct):
@@ -73,6 +74,7 @@ class rnsv_xmod_base:
         return self * other
     def __truediv__(self, other):
         if isinstance(other, int):
+            self.comb_comment = f"xmod{self.m}: div({other})"
             x = rns(other, [self.m])
             xi = x.mulinv()
             (mrv,mrb,mri) = xi.mixed_radix()

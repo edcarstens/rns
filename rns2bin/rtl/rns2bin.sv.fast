@@ -2,6 +2,8 @@
 //.base = [8,9,5,7,13,17,11]
 //.rns0 = rnsv('rns0', base)
 //.rns1 = rnsv('rns1', [16])
+//.xmod11 = rns0.xmod('xmod11', 11)
+//.xmod16 = rns0.xmod('xmod16', 16)
 //.+sec.rns2bin('rns2bin.sv')
 // rns2bin (RNS-to-Binary converter)
 //.#fast()
@@ -39,10 +41,22 @@ module rns2bin(
    assign @x03:=rns0.x03@ = @(x02[5:] + k03[4]*16)/base[4]@;
    // normalize x03 (mod 16) so result < 16
    //.# assign @t0:=rns0.t0@ = @(x03[6:] - x03[5])/base[5]@;
-   assign @t0:=rns0.xmod("t0",11)@ = @(x03[6] - (x03[5]>>11))/base[5]@
-   assign @xm16:=rns0.xmod("xm16",16)@ = @(x03[5]>>16) + (t0>>16)@;
+   assign @t0:=xmod11.t0@ = @(x03[6] - (x03[5]>>11))/base[5]@
+   assign @xm16:=xmod16.xm16@ = @(x03[5] >> 16) + (t0 >> 16)@;
    //.# assign @d0:=rns1.d0@ = x1e0 ? @rns1(0)@ : @d0 << (16 - xm16)@;
-   assign @d0:=rns0.xmod("d0",16)@ = x1e0 ? @rns0.xmod(0,16)@ : @16 - xm16@;
+   //.# assign @d0:=rns0.xmod("d0",16)@ = x1e0 ? @rns0.xmod(0,16)@ : @16 - xm16@;
+   assign @d0:=xmod16.d0@ = x1e0 ? @xmod16(0)@ : @-xm16@;
+
+   //.if (0):{
+   // alternate more intuitive idea
+   //.xmod16=xmodv('xmod16', 16)  ## just like rns0=rnsv('rns0', base)
+   // then
+   assign @xm16:=xmod16.xm16@ = @(x03[5] >> 16) + (t0 >> 16)@;
+   // or
+   assign @xm16:=xmod16.xm16@ = @(xm16 << x03[5]) + (xm16 << t0)@; // like rnsv_var << ?
+   // xmod constant zero: xmod16(0)
+   assign @d0:=xmod16.d0@ = x1e0 ? @xmod16(0)@ : @16 - xm16@;
+   //.}
 
    // Testing..
    //.#assign @rns0.z@ = @22 - 3 * (1 + x)@;

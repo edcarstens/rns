@@ -1,0 +1,35 @@
+//.+fast
+//.class xmodv:{
+//. def __init__(self, name, m, rnsv_base):{
+//.  self.name = name
+//.  self.m = m
+//.  self.rnsv_base = rnsv_base
+//.  self.constants = {}
+//.  self.var_num = 0
+//.  self.do_declaration = True
+//. }
+//. def gen_var_name(self):{
+//.  rv = f"_{self.name}_{self.var_num}"
+//.  self.var_num += 1
+//.  return rv
+//. } # end def gen_var_name
+//. def __getattr__(self, name):{
+//.  rv = rnsv_xmod(name, self.m, self.rnsv_base, do_declaration=self.do_declaration)
+//.  setattr(self, name, rv)
+//.  return rv
+//. } # end def __getattr__
+//. def __call__(self, x):{
+//.  if isinstance(x, str):{
+//.   if x == 'no declaration':{
+//.    self.do_declaration = False
+//.   }
+//.   return self
+//.  } # end if
+//.  assert(isinstance(x, int))
+//.  if x not in self.constants:{
+//.   self.constants[x] = rnsv_xmod_const(x, self.m, self.rnsv_base)
+//.  } # end if
+//.  return self.constants[x].name
+//. } # end def __call__
+//.} # end class xmodv
+//.-fast

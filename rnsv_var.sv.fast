@@ -33,9 +33,19 @@
 //. def connect_inst(self, other, modname, start, stop, step):{
 //.  n = self.parent.gen_var_name()
 //.  instname = "inst_" + n
+//.  if modname == "modadd":{
+//.   op = '+'
+//.  }
+//.  if modname == "modmul":{
+//.   op = '*'
+//.  }
 //.  +self.parent.instances
 rnsv_@modname@ @instname@(.z(@n@), .x(@self.name@), .y(@other.name@));
 //.  -self.parent.instances
+//.  +self.parent.comb
+//-----------------------------------------------------------------
+// @self.name@ @op@ @other.name@ (see instance @instname@ above)
+//.  -self.parent.comb
 //.  rv = self.declare(n)
 //.  rv.my_slice = slice(start,stop,step) # propogate slice
 //.  return rv
@@ -51,12 +61,13 @@ rnsv_@modname@ @instname@(.z(@n@), .x(@self.name@), .y(@other.name@));
 //.  return rv
 //. } # end def __getitem__
 //. def __lshift__(self, other):{
-//.  print('lshift')
 //.  assert(isinstance(other, type(self.xmods[0])))
 //.  self.n = self.parent.gen_var_name()
 //.  start,stop,step = self.get_slice(len(self.xmods))
 //.  idxs = []
 //.  +self.parent.comb
+//-----------------------------------------------------------------
+// mapping @other.name@ to mods of @self.n@[@start@:@stop@:@step@]
 //.  for i in range(start, stop, step):{
 assign @self.n@.x@self.xmods[i].m@ = @other.map_to_mod(self.xmods[i].m)@;
 //.   idxs.append(i)

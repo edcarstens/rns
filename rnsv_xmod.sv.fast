@@ -16,7 +16,20 @@ logic [@m-1@:0] @name@;
 //. }
 //. else:{
 //.  n = self.rnsv_base.gen_var_name()
-//. }
+//.  +self.rnsv_base.comb
+//-----------------------------------------------------------------
+//.  if self.comb_comment:{
+// @self.comb_comment@
+//.   self.comb_comment = ''
+//.  }
+//.  if x is None:{
+// xmod@m@: @op@()
+//.  }
+//.  else:{
+// xmod@m@: @op@(@x@)
+//.  }
+//.  -self.rnsv_base.comb
+//. } # end else
 //. +self.rnsv_base.comb
 //. if (op == 'mul') and (x % m == 0):{
 assign @n@ = @m@'d1;
@@ -34,14 +47,25 @@ assign @n@ = {@','.join(r)@};
 //.def connect_inst(self, other, modname):{
 //. if not self.parent:{
 //.  n = self.rnsv_base.gen_var_name()
-//.  modadd(self.m)
+//.  if modname == "modadd":{
+//.   modadd(self.m)
+//.   op = '+'
+//.  }
+//.  if modname == "modmul":{
+//.   modmul(self.m)
+//.   op = '*'
+//.  }
 //.  +self.rnsv_base.includes
-`include "modadd_@self.m@.sv"
+`include "@modname@_@self.m@.sv"
 //.  -self.rnsv_base.includes
 //.  +self.rnsv_base.instances
 //.  instname = "inst_" + n
 @modname@_@self.m@ @instname@(.z(@n@), .x(@self.name@), .y(@other.name@));
 //.  -self.rnsv_base.instances
+//.  +self.rnsv_base.comb
+//-----------------------------------------------------------------
+// xmod@self.m@: @self.name@ @op@ @other.name@ (see instance @instname@ above)
+//.  -self.rnsv_base.comb
 //.  return self.create(n)
 //. } # end if
 //.} # end def connect_inst

@@ -82,7 +82,7 @@ class rnsv_var_base:
     def _call_nops(self, idxs):
         for idx in range(len(self.xmods)):
             if idx not in idxs:
-                print(f"_call_nops: {idx} {self.xmods[idx].parent}")
+                #print(f"_call_nops: {idx} {self.xmods[idx].parent}")
                 self.xmods[idx].nop()
     def __neg__(self):
         #print("__neg__")
