@@ -1,0 +1,38 @@
+//.def rnsmon(rns0, varname):{
+//.module = f"rnsmon_{rns0}"
+//.fn = f"{module}.sv"
+//.if not fast[fn]:{
+//.sec_rnsmon = Section(fn)
+//.+sec_rnsmon()
+//.RNSMON = module.upper()
+`ifndef @RNSMON@_DEFINED
+`define @RNSMON@_DEFINED
+`include "structs.sv"
+
+module @module@(
+	      input @rns0@ x,
+	      input string varname);
+   always @@(x) begin
+      //.for m in rns0.base:{
+      $display("%s.x@m@: %b (%d)", varname, x.x@m@, oh2int(x.x@m@));
+      //.}
+   end
+
+   function int oh2int(input int xoh);
+      for (int i=0; i<32; i++) begin
+	 if (xoh[i]) return i;
+      end
+      return -1;
+   endfunction // oh2int
+     
+endmodule // @module@
+`endif
+//.-sec_rnsmon
+//.+rns0.includes
+`include "@module@.sv"
+//.-rns0.includes
+//.} # end if
+//.+rns0.instances
+@module@ inst_mon_@varname@(@varname@,"@varname@");
+//.-rns0.instances
+//.} # end def

@@ -24,7 +24,6 @@ class rnsv_var_base:
                 rmap[y].append(xname)
             else:
                 rmap[y] = [xname]
-        #print(rmap)
         r = []
         for x in range(m-1,-1,-1):
             if x in rmap:
@@ -41,8 +40,9 @@ class rnsv_var_base:
         :return:
         """
         pass
-    def create(self, name):
-        return type(self)(name, self.parent)
+    def create(self, name, parent=None):
+        parent = parent if parent else self.parent
+        return type(self)(name, parent)
     def copy(self):
         rv = self.create(self.name)
         rv.parent = self.parent
@@ -54,7 +54,7 @@ class rnsv_var_base:
         rv.sva = self.sva
         rv.my_slice = self.my_slice
         #rv.n = self.n
-        rv.xmods = self.xmods.copy()  ## deep copy needed here?
+        rv.xmods = [z.copy() for z in self.xmods]  ## deep copy needed here?
         for xmod in rv.xmods:
             xmod.parent = rv
         return rv
@@ -82,19 +82,19 @@ class rnsv_var_base:
     def _call_nops(self, idxs):
         for idx in range(len(self.xmods)):
             if idx not in idxs:
-                #print(f"_call_nops: {idx} {self.xmods[idx].parent}")
                 self.xmods[idx].nop()
+    def assign_xmods_parent(self):
+        for xmod in self.xmods:
+            xmod.parent = self
     def __neg__(self):
-        #print("__neg__")
         rv = self.map2comb('neg')
-        #print(f"{self.n}")
         start,stop,step = self.get_slice(len(self.xmods))
         idxs = []
         for idx in range(start, stop, step):
-            self.xmods[idx] = -self.xmods[idx]
+            rv.xmods[idx] = -self.xmods[idx]
             idxs.append(idx)
-        #print("ok")
         self._call_nops(idxs)
+        rv.assign_xmods_parent()
         rv.my_slice = self.my_slice  # propagate the slice
         return rv
     def __lshift__(self, other):
@@ -109,6 +109,7 @@ class rnsv_var_base:
                 rv.xmods[idx] = self.xmods[idx] + other
                 idxs.append(idx)
             self._call_nops(idxs)
+            rv.assign_xmods_parent()
             rv.my_slice = self.my_slice  # propagate the slice
             return rv
         elif isinstance(other, type(self)):
@@ -136,6 +137,7 @@ class rnsv_var_base:
                 rv.xmods[idx] = self.xmods[idx] * other
                 idxs.append(idx)
             self._call_nops(idxs)
+            rv.assign_xmods_parent()
             rv.my_slice = self.my_slice  # propagate the slice
             return rv
         elif isinstance(other, type(self)):
@@ -158,7 +160,6 @@ class rnsv_var_base:
             x = rns(other, self.get_base())
             xi = x.mulinv()
             (mrv,mrb,mri) = xi.mixed_radix()
-            #print(f"mri={mri}")
             return self * mri
         else:
             raise Exception(f"Division operator (/) only supports int type, encountered {other}")
@@ -172,5 +173,5 @@ class rnsv_var_base:
         start,stop,step = self.get_slice(len(self.xmods), other)
         bits = []
         for idx in range(start, stop, step):
-            bits.append(self.xmods[idx] == other)
+            bits.append(self.xmods[idx] != other)
         return ' | '.join(bits)

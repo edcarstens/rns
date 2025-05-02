@@ -1,8 +1,10 @@
+///fast.include("rnsmod.sv.fast")
+///fast.include("norm16.sv.fast")
+///fast.include("rnsmon.sv.fast")
 //.#       0 1 2 3  4  5  6
 //.base = [8,9,5,7,13,17,11]
-//.rns0 = rnsv('rns0', base)
-//.rns1 = rnsv('rns1', [16])
-//.xmod11 = rns0.xmod('xmod11', 11)
+//.rns0 = rnsv('rns2bin_rns0', 'rns0', base)
+//.rns1 = rnsv('rns2bin_rns0', 'rns1', [17,11])
 //.xmod16 = rns0.xmod('xmod16', 16)
 //.+sec.rns2bin('rns2bin.sv')
 // rns2bin (RNS-to-Binary converter)
@@ -10,49 +12,81 @@
 //.include_structs(rns0.base, "rns0")
 //.include_structs(rns1.base, "rns1")
 //.rns0.includes > ''
-//.rns1.includes > ''
+`include "encoder.sv"
 module rns2bin(
-	       output logic [21:0] y,
+	       output logic [18:0] y,
 	       output logic ready,
 	       input rns0 x,
 	       input logic clk,
 	       input logic rst
 );
    //.x = rns0('no declaration').x
+   //.x03 = rns0.x03
+   //.x13 = rns0.x13
+   //.x23 = rns0.x23
+   //.nx3 = rns1.nx3
+   //.nx7 = rns1.nx7
+   //.nx11 = rns1.nx11
    //.rns0.declarations > ''
-   //.rns1.declarations > ''
+   logic		   x1e0;
    //.rns0.instances > ''
-   //.rns1.instances > ''
    // convert first residue (mod 8) to y[2:0]
-   enc3 ienc0(.y(y[2:0]), .x(x.x8));
-   enc4 ienc1(.y(y[6:3]), .x(d0));
-   
+   encoder #(3,8)  ienc0(.y(y[2:0]), .x(x.x8));
+   encoder #(4,16) ienc1(.y(y[6:3]), .x(d0));
+   encoder #(4,16) ienc2(.y(y[10:7]), .x(d1));
+   encoder #(4,16) ienc3(.y(y[14:11]), .x(d2));
+   encoder #(4,16) ienc4(.y(y[18:15]), .x(d3));
+   // rnsmod algorithms
+   @rnsmod(rns0, 16)@ inst_rnsmod16(.x3(x03), .xin(x1));
+   @rnsmod(rns0, 256)@ inst_rnsmod256(.x3(x13), .xin(x1));
+   @rnsmod(rns0, 4096)@ inst_rnsmod4096(.x3(x23), .xin(x1));
+   @norm16(rns1)@ inst_norm3(.nx(nx3), .x(x03_16));
+   norm16 inst_norm7(.nx(nx7), .x(x13_16));
+   norm16 inst_norm11(.nx(nx11), .x(x23_16));
+   // monitors
+   //.#rnsmon(rns0, "x03")
+   //.#rnsmon(rns0, "x13")
+   //.#rnsmon(rns0, "x23")
    //.rns0.comb > ''
-   //.rns1.comb > ''
    assign @x1:=rns0.x1@ = @(x[1:] - x[0])/base[0]@;
-   assign x1e0 = @(x1[1:] == 0)@;
-   assign @k00:=rns0.k00@ = @-x1[1:2]/16@;
-   assign @x00:=rns0.x00@ = @(x1[2:] + k00[1]*16)/base[1]@;
-   assign @k01:=rns0.k01@ = @-x00[2:3]/16@;
-   assign @x01:=rns0.x01@ = @(x00[3:] + k01[2]*16)/base[2]@;
-   assign @k02:=rns0.k02@ = @-x01[3:4]/16@;
-   assign @x02:=rns0.x02@ = @(x01[4:] + k02[3]*16)/base[3]@;
-   assign @k03:=rns0.k03@ = @-x02[4:5]/16@;
-   assign @x03:=rns0.x03@ = @(x02[5:] + k03[4]*16)/base[4]@;
-   // normalize x03 (mod 16) so result < 16
-   //.# assign @t0:=rns0.t0@ = @(x03[6:] - x03[5])/base[5]@;
-   assign @t0:=xmod11.t0@ = @(x03[6] - (x03[5]>>11))/base[5]@
-   assign @xm16:=xmod16.xm16@ = @(x03[5] >> 16) + (t0 >> 16)@;
-   //.# assign @d0:=rns1.d0@ = x1e0 ? @rns1(0)@ : @d0 << (16 - xm16)@;
-   //.# assign @d0:=rns0.xmod("d0",16)@ = x1e0 ? @rns0.xmod(0,16)@ : @16 - xm16@;
-   assign @d0:=xmod16.d0@ = x1e0 ? @xmod16(0)@ : @-xm16@;
-
+   //.#assign x1e0 = @(x1[1:] == 0)@;
+   assign @x03_16:=rns1.x03_16@ = @x03[5:] >> rns1@;
+   assign @x13_16:=rns1.x13_16@ = @((x13[5:] >> rns1) - nx3)/16@;
+   assign @x23_16:=rns1.x23_16@ = @((x23[5:] >> rns1) - nx7*16 - nx3)/256@;
+   //.#rnsmon(rns1, "x13_16")
+   //.#rnsmon(rns1, "x23_16")
+   
+   // Account for sign and special zero cases
+   assign carry0 = @(nx3 != 0)@;
+   assign @z0s:=rns1.z0s@ = !carry0 ? @rns1(0)@ : @16 - nx3@;
+   assign carry1 = carry0 || @(nx7 != 0)@;
+   assign @r1s:=rns1.r1s@ = !carry1 ? @rns1(0)@ :
+		carry0 ? @15 - nx7@ : @16 - nx7@;
+   assign carry2 = carry1 || @(nx11 != 0)@;
+   assign @r2s:=rns1.r2s@ = !carry2 ? @rns1(0)@ :
+		carry1 ? @15 - nx11@ : @16 - nx11@;
+   //.#rnsmon(rns1,"nx3")
+   //.#rnsmon(rns1,"nx7")
+   //.#rnsmon(rns1,"nx11")
+   //.#rnsmon(rns1,"z0s")
+   //.#rnsmon(rns1,"r1s")
+   //.#rnsmon(rns1,"r2s")
+   
+   // r = mod 4096 result in RNS base, [17,11]
+   assign @r:=rns1.r@ = @z0s + r1s*16 + r2s*256@;
+   assign @r3:=rns1.r3@ = @((x1[5:] >> rns1) - r)/4096@;
+   //.rnsmon(rns1,"r")
+   //.rnsmon(rns1,"r3")
+   
+   // Convert to mod 16 for encoders
+   assign @d0:=xmod16.d0@ = @z0s[0] >> 16@;
+   assign @d1:=xmod16.d1@ = @r1s[0] >> 16@;
+   assign @d2:=xmod16.d2@ = @r2s[0] >> 16@;
+   assign @d3:=xmod16.d3@ = @r3[0] >> 16@;
    //.if (0):{
    // alternate more intuitive idea
    //.xmod16=xmodv('xmod16', 16)  ## just like rns0=rnsv('rns0', base)
    // then
-   assign @xm16:=xmod16.xm16@ = @(x03[5] >> 16) + (t0 >> 16)@;
-   // or
    assign @xm16:=xmod16.xm16@ = @(xm16 << x03[5]) + (xm16 << t0)@; // like rnsv_var << ?
    // xmod constant zero: xmod16(0)
    assign @d0:=xmod16.d0@ = x1e0 ? @xmod16(0)@ : @16 - xm16@;
@@ -70,7 +104,6 @@ module rns2bin(
 
    // SV Assertions
    //.rns0.sva > ''
-   //.rns1.sva > ''
 
 endmodule // rns2bin
 //.-sec.rns2bin

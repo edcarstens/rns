@@ -5,8 +5,10 @@ import sys
 sys.path.append('c:/users/edcar/rns')
 from rns import rns
 from xmod import xmod
+import random
 
 def _rnsmod_help(xx, mm, iters):
+    debug(f"xin={xx}")
     ai = -xx
     m = xx.base[0]
     mmi = xmod(mm, m).mulinv()
@@ -14,8 +16,9 @@ def _rnsmod_help(xx, mm, iters):
     k = ai[0] * mmi
     debug(f"k={k}, m={m}")
     #nx = xx.remove_mod()
+    sum = xx[1:] + k.x * mm
     nx = (xx[1:] + k.x * mm) / m
-    debug(f"nx = {nx}")
+    debug(f"sum={sum}  nx={nx}")
     if iters == 1:
         return nx
     return _rnsmod_help(nx, mm, iters - 1)
@@ -66,11 +69,12 @@ def negate(z,s,mm):
     return z
 
 def debug(s, level=1):
-    if level <= debug_level:
+    if level >= debug_level:
         print(s)
 
 def rns2bin(x):
-    base = [8,9,7,13,5,17,11]
+    #base = [8,9,7,13,5,17,11]
+    base = [8,9,5,7,13,17,11]
     assert(isinstance(x, int))
     y = rns(x, base)
     debug(f"y={y}")
@@ -83,83 +87,100 @@ def rns2bin(x):
     debug(f"y={y}")
 
     ## zero is special case
-    y_is_zero = (y==0)
+    #y_is_zero = (y==0)
 
     ## run the rnsmod algorithm modulo 2^4 = 16 for 9,5,7, and 13
     z0,s0 = rnsmod(y, 16, 4)
-    debug(f"z0={z0}")
+    debug(f"x03={z0}",9)
 
-    if y_is_zero:
-        z0 = rns(0, z0.base)
-    else:
-        z0 = normalize(z0, 16)
-    debug(f"z0={z0}")  ## still doesn't account for sign
+    #if y_is_zero:
+    #    z0 = rns(0, z0.base)
+    #else:
+    z0 = normalize(z0, 16)
+    debug(f"nx3={z0}",9)  ## still doesn't account for sign
     
     z1,s1 = rnsmod(y, 256, 4)
-    debug(f"z1={z1}")
+    debug(f"x13={z1}",9)
 
     z2,s2 = rnsmod(y, 256*16, 4)
-    debug(f"z2={z2}")
+    debug(f"x23={z2}",9)
 
     r1 = (z1 - z0) / 16
+    debug(f"x13_16={r1}",9)
     r1 = normalize(r1, 16)
+    debug(f"nx7={r1}",9)
     
     r2 = (z2 - r1*16 - z0) / 256
+    debug(f"x23_16={r2}",9)
     r2 = normalize(r2, 16)
-    debug(f"r1={r1}")
-    debug(f"r2={r2}")
+    debug(f"nx11={r2}",9)
 
     ## Now account for sign for z0,r1,r2
-    if y_is_zero:
+    carry = 0
+    if (z0 == 0):
         z0s = rns(0, z0.base)
     else:
         z0s = negate(z0, s0, 16)
-    if y_is_zero:
+        carry = 1
+    debug(f"z0s={z0s}",9)
+
+    if (r1 == 0) and (carry == 0):
         r1s = rns(0, r1.base)
     else:
-        #r1s = (negate(r1*16+z0, s1, 256) - z0s)/16
-        r1s = 15 - r1  ## the math for above reduces to this
-    if y_is_zero:
+        r1s = 16-carry - r1
+        carry = 1
+    debug(f"r1s={r1s}",9)
+
+    if (r2 == 0) and (carry == 0):
         r2s = rns(0, r2.base)
     else:
-        #r2s = (negate(r2*256+r1*16+z0, s2, 16*256) - z0s - r1s*16)/256
-        r2s = 15 - r2  ## the math for above reduces to this
+        r2s = 16-carry - r2
+        carry = 1
+    debug(f"r2s={r2s}",9)
     r = z0s + r1s*16 + r2s*256
-    
-    debug(f"z0s={z0s}")
-    debug(f"r1s={r1s}")
-    debug(f"r2s={r2s}")
-    debug(f"r={r}")
+    debug(f"r={r}",9)
+
     # reduced version of y to match RNS base = [11,17]
     #ry = y.remove_mod().remove_mod().remove_mod().remove_mod()
     ry = y[-2:]
-    debug(f"ry={ry}")
+    debug(f"ry={ry}",9)
     r3 = (ry - r) / 4096
-    debug(f"r3={r3}")
+    debug(f"r3={r3}",9)
 
     x63 = z0s.integer
     x10_7 = r1s.integer
     x14_11 = r2s.integer
     x18_15 = r3.integer
-
-    debug(f"x[2:0] = {bin(x20)} = {x20}")
-    debug(f"x[6:3] = {bin(x63)} = {x63}")
-    debug(f"x[10:7] = {bin(x10_7)} = {x10_7}")
-    debug(f"x[14:11] = {bin(x14_11)} = {x14_11}")
-    debug(f"x[18:15] = {bin(x18_15)} = {x18_15}")
+    assert(x63 < 16)
+    assert(x10_7 < 16)
+    assert(x14_11 < 16)
+    assert(x18_15 < 16)
+    debug(f"x[2:0] = {bin(x20)} = {x20}",9)
+    debug(f"x[6:3] = {bin(x63)} = {x63}",9)
+    debug(f"x[10:7] = {bin(x10_7)} = {x10_7}", 9)
+    debug(f"x[14:11] = {bin(x14_11)} = {x14_11}",9)
+    debug(f"x[18:15] = {bin(x18_15)} = {x18_15}",9)
     ## Final check
     finalx = x18_15*(2**15) + x14_11*(2**11) + x10_7*(2**7) + x63*8 + x20
-    debug(f"finalx={finalx}  x={x}")
+    debug(f"finalx={finalx}  x={x}",9)
     assert(finalx == x)
 
 
 ## Testing
-debug_level = 1 # no debug info
-for x in range(700200*8, 700201*8, 8):
-    if x%800==0:
-        print(f"\n{x}", end='', flush=True)
-    elif x%80==0:
-        print('.', end='', flush=True)
-    rns2bin(x)
+debug_level = 9 # no debug info
+#for x in range(700200*8, 700201*8, 8):
+#    if x%800==0:
+#        print(f"\n{x}", end='', flush=True)
+#    elif x%80==0:
+#        print('.', end='', flush=True)
+#    rns2bin(x)
 
 ## works up to 5602087
+
+#rns2bin(245506)
+#rns2bin(243714)
+
+for i in range(100):
+    x = int(random.getrandbits(18))
+    rns2bin(x)
+

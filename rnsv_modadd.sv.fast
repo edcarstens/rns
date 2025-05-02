@@ -4,6 +4,8 @@
 //. zero = f"{m}'b{xmod(0,m).onehot()}"
 //. outsec = Section(f"modadd_{m}.sv")
 //. +outsec()
+`ifndef MODADD_@m@_DEFINED
+`define MODADD_@m@_DEFINED
 module modadd_@m@(output logic [@ohrange@] z,
 	          input logic  [@ohrange@] x,y
 );
@@ -31,26 +33,36 @@ module modadd_@m@(output logic [@ohrange@] z,
       endcase // case (x)
    end
 endmodule // modadd_@m@
+`endif
 //. -outsec
 //.}
 
 //.def rnsv_modadd(my_rns):{
+//. if my_rns.rnsv_modadd_called:{
+//.  return
+//. }
 //. base = my_rns.base
-//. name = my_rns.name
-//. +sec.rnsv_modadd("rnsv_modadd.sv")
+//. name = my_rns.struct_name
+//. outsec = Section(f"{name}_modadd.sv")
+//. +outsec()
+//. NAME = name.upper()
+`ifndef @NAME@_MODADD_DEFINED
+`define @NAME@_MODADD_DEFINED
 //.for m in base:{
 `include "modadd_@m@.sv"
 //.}
-module rnsv_modadd(output @name@ z,
-		   input @name@ x,y);
+module @name@_modadd(output @name@ z,
+		     input @name@ x,y);
 
 //. for m in base:{
 //.  modadd(m)
    modadd_@m@ inst_modadd_@m@(.z(z.x@m@), .x(x.x@m@), .y(y.x@m@));
 //. } # end for m
-endmodule // rnsv_modadd
-//. -sec.rnsv_modadd
+endmodule // @name@_modadd
+`endif
+//. -outsec
 //. +my_rns.includes
-`include "rnsv_modadd.sv"
+`include "@name@_modadd.sv"
 //. -my_rns.includes
+//. my_rns.rnsv_modadd_called = True
 //.}

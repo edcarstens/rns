@@ -5,6 +5,6 @@
 //.dumpvcd = True
 
 ///fast.include("rns2bin.sv.fast")
-//.rnsv_modadd(rns0)
-//.rnsv_modmul(rns0)
+//.#rnsv_modadd(rns0)
+//.#rnsv_modmul(rns0)
 //.fast.writeFiles()

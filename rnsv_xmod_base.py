@@ -78,7 +78,6 @@ class rnsv_xmod_base:
             x = rns(other, [self.m])
             xi = x.mulinv()
             (mrv,mrb,mri) = xi.mixed_radix()
-            #print(f"mri={mri}")
             return self * mri
         else:
             raise Exception(f"Division operator (/) only supports int type, encountered {other}")
@@ -106,6 +105,4 @@ class rnsv_xmod_base:
         if isinstance(other, int):
             idx = other % self.m
             return f"~{self.name}[{idx}]"
-        return f"~({self.name} & {other.name})"
-    
-            
+        return f"~(| ({self.name} & {other.name}))"

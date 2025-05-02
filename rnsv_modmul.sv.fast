@@ -5,6 +5,8 @@
 //. one =  f"{m}'b{xmod(1,m).onehot()}"
 //. outsec = Section(f"modmul_{m}.sv")
 //. +outsec()
+`ifndef MODMUL_@m@_DEFINED
+`define MODMUL_@m@_DEFINED
 module modmul_@m@(output logic [@ohrange@] z,
 	          input logic  [@ohrange@] x,y
 );
@@ -33,23 +35,36 @@ module modmul_@m@(output logic [@ohrange@] z,
       endcase // case (x)
    end
 endmodule // modmul_@m@
+`endif
 //. -outsec
 //.}
 
 //.def rnsv_modmul(my_rns):{
+//. if my_rns.rnsv_modmul_called:{
+//.  return
+//. }
 //. base = my_rns.base
-//. name = my_rns.name
-//. +sec.rnsv_modmul("rnsv_modmul.sv")
-module rnsv_modmul(output @name@ z,
-		   input @name@ x,y);
+//. name = my_rns.struct_name
+//. outsec = Section(f"{name}_modmul.sv")
+//. +outsec()
+//. NAME = name.upper()
+`ifndef @NAME@_MODMUL_DEFINED
+`define @NAME@_MODMUL_DEFINED
+//.for m in base:{
+`include "modmul_@m@.sv"
+//.}
+module @name@_modmul(output @name@ z,
+		     input @name@ x,y);
 
 //. for m in base:{
 //.  modmul(m)
    modmul_@m@ inst_modmul_@m@(.z(z.x@m@), .x(x.x@m@), .y(y.x@m@));
 //. } # end for m
-endmodule // rnsv_modmul
-//. -sec.rnsv_modmul
+endmodule // @name@_modmul
+`endif
+//. -outsec
 //. +my_rns.includes
-`include "rnsv_modmul.sv"
+`include "@name@_modmul.sv"
 //. -my_rns.includes
+//. my_rns.rnsv_modmul_called = True
 //.}

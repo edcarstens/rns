@@ -8,8 +8,9 @@
 ///fast.include("rnsv_modmul.sv.fast")
 //.+fast
 //.class rnsv:{
-//. def __init__(self, name, base):{
-//.  self.name = name
+//. def __init__(self, name, struct_name, base):{
+//.  self.name = name ## unique name given to the instance used for sections
+//.  self.struct_name = struct_name  ## SV struct name used for RNS
 //.  self.base = base
 //.  self.constants = {}
 //.  self.xmod_constants = {}
@@ -21,9 +22,14 @@
 //.  self.instances = Section(f"{name}_instances")
 //.  self.comb = Section(f"{name}_comb")
 //.  self.sva = Section(f"{name}_sva")
+//.  self.rnsv_modadd_called = False
+//.  self.rnsv_modmul_called = False
+//. }
+//. def __str__(self):{
+//.  return self.struct_name
 //. }
 //. def gen_var_name(self):{
-//.  rv = f"_{self.name}_{self.var_num}"
+//.  rv = f"_{self.struct_name}_{self.var_num}"
 //.  self.var_num += 1
 //.  return rv
 //. }
@@ -52,7 +58,7 @@
 //.  setattr(self, name, rv)
 //.  if self.do_declaration:{
 //.   +self.declarations
-@self.name@ @name@;
+@self.struct_name@ @name@;
 //.   -self.declarations
 //.#   rv.declared = True
 //.  }

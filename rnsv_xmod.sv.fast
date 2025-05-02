@@ -13,6 +13,7 @@ logic [@m-1@:0] @name@;
 //. m = self.m
 //. if self.parent:{
 //.  n = f"{self.parent.n}.x{m}"
+//.  print(n)
 //. }
 //. else:{
 //.  n = self.rnsv_base.gen_var_name()
@@ -35,7 +36,7 @@ logic [@m-1@:0] @name@;
 assign @n@ = @m@'d1;
 //. }
 //. elif (op == 'nop'):{
-assign @n@ = @self.name@;
+assign @n@ = @m@'b0;
 //. }
 //. else:{
 //.  r = super().op_map(fct)
@@ -73,6 +74,8 @@ assign @n@ = {@','.join(r)@};
 //. if isinstance(other, int):{
 //.  n = self.rnsv_base.gen_var_name()
 //.  +self.rnsv_base.comb
+//-----------------------------------------------------------------
+// xmod@self.m@: mapping @self.name@ to @n@ (mod @other@)
 assign @n@= @self.map_to_mod(other)@;
 //.  -self.rnsv_base.comb
 //.  return self.create(n, other)

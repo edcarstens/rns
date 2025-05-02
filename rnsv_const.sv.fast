@@ -2,9 +2,11 @@
 //.class rnsv_const(rnsv_const_base):{
 //. def declare_and_assign_me(self):{
 //.  +self.parent.declarations
-@self.parent.name@ @self.name@;
+@self.parent.struct_name@ @self.name@;
 //.  -self.parent.declarations
 //.  +self.parent.comb
+//-----------------------------------------------------------------
+// @self.parent.struct_name@(@self.integer@)
 //.  idx = 0
 //.  for m in self.base:{
 //.   xoh = self.xmods[idx].onehot()
