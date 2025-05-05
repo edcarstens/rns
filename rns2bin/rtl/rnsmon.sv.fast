@@ -1,14 +1,54 @@
 //.+fast
-//.## TODO: Provide support for rnsv_xmod type var
+
 //.def rnsmon(var):{
-//.assert(isinstance(var, rnsv_var))
-//.rns0 = var.parent
-//.module = f"rnsmon_{rns0}"
-//.fn = f"{module}.sv"
-//.if not fast[fn]:{
-//.sec_rnsmon = Section(fn)
-//.+sec_rnsmon()
-//.RNSMON = module.upper()
+//.if isinstance(var, rnsv_xmod):{
+//. rns0 = var.rnsv_base ## for sections
+//. module = "rnsmon_xmod"
+//. fn = f"{module}.sv"
+//. if not fast[fn]:{
+//.  sec_rnsmon = Section(fn)
+//.  +sec_rnsmon()
+//.  MODULE = module.upper()
+`ifndef @MODULE@_DEFINED
+`define @MODULE@_DEFINED
+
+module @module@ #(parameter XWIDTH=64) (
+		input longint x,
+		input string  varname);
+   
+   always @@(x) $display("%s: %b (%d)", varname, x[XWIDTH-1:0], oh2int(x));
+
+   function int oh2int(input longint xoh);
+      for (int i=0; i<XWIDTH; i++) begin
+	 if (xoh[i]) return i;
+      end
+      return -1;
+   endfunction // oh2int
+
+endmodule // @module@
+
+`endif
+//.  -sec_rnsmon
+//. } # end if
+//. if not f"{module}.sv" in rns0.includes.getText():{
+//.  +rns0.includes
+`include "@module@.sv"
+//.  -rns0.includes
+//. } # end if
+//. +rns0.instances
+@module@ #(.XWIDTH(@var.m@)) inst_mon_@var.name@(@var.name@, "@var.name@");
+//. -rns0.instances
+//. return
+//.} # end if
+
+//.if isinstance(var, rnsv_var):{
+//. rns0 = var.parent
+//. module = f"rnsmon_{rns0}"
+//. fn = f"{module}.sv"
+//. if not fast[fn]:{
+//.  sec_rnsmon = Section(fn)
+//.  +sec_rnsmon()
+//.  RNSMON = module.upper()
 `ifndef @RNSMON@_DEFINED
 `define @RNSMON@_DEFINED
 `include "structs.sv"
@@ -22,25 +62,29 @@ module @module@(
       //.}
    end
 
-   function int oh2int(input int xoh);
-      for (int i=0; i<32; i++) begin
+   function int oh2int(input longint xoh);
+      for (int i=0; i<64; i++) begin
 	 if (xoh[i]) return i;
       end
       return -1;
    endfunction // oh2int
      
 endmodule // @module@
+
 `endif
-//.-sec_rnsmon
-//.} # end if
-//.if not f"{module}.sv" in rns0.includes.getText():{
-//.+rns0.includes
+//.  -sec_rnsmon
+//. } # end if
+//. if not f"{module}.sv" in rns0.includes.getText():{
+//.  +rns0.includes
 `include "@module@.sv"
-//.-rns0.includes
-//.} # end if
-//.+rns0.instances
+//.  -rns0.includes
+//. } # end if
+//. +rns0.instances
 @module@ inst_mon_@var.name@(@var.name@,"@var.name@");
-//.-rns0.instances
+//. -rns0.instances
+//. return
+//.} # end if
+//.return "// ERROR - Type @type(var)@ not supported for rnsmon"
 //.} # end def
 
 //.-fast

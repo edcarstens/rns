@@ -81,6 +81,7 @@ module rns2bin(
    assign @d1:=xmod16.d1@ = @r1s[2]@;
    assign @d2:=xmod16.d2@ = @r2s[2]@;
    assign @d3:=xmod16.d3@ = @r3[0] >> 16@;
+   //.rnsmon(d3)
    
    //.if dumpvcd:{
    initial begin

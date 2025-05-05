@@ -1,0 +1,9 @@
+///import sys
+///sys.path.append('c:/users/edcar/rns')
+///fast.include("c:/users/edcar/rns/rnsv.sv.fast")
+
+//.dumpvcd = True
+
+///fast.include("bin2rns_p.sv.fast")
+//.rnsv_modadd(rns0)
+//.fast.writeFiles()

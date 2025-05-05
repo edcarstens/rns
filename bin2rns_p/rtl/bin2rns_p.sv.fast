@@ -1,0 +1,87 @@
+//.base = [8,9,5,7,11,13,17]
+//.rns0 = rnsv('rns0', base)
+//.#rns1 = rnsv('rns1', base[1:])  ## exclude 8 from this base
+//.+sec.bin2rns('bin2rns_p.sv')
+// rnsv_bin2rns (Binary-to-RNS converter)
+//.#fast()
+//.include_structs(rns0.base, "rns0")
+//.#include_structs(rns1.base, "rns1")
+//.rns0.includes > ''
+module bin2rns_p(
+		 output		    rns0 y,
+		 input logic [17:0] x,
+		 input logic	    clk
+	       );
+   //.rns0('no declaration').y
+   //.rns0.declarations > ''
+   logic [5:0]			xin00,xin10;
+   logic [2:0]			xin01,xin11;
+   //.rns0.instances > ''
+   //.rns0.comb > ''
+   assign @rns0.y0_8@ = @rns0.y0*8@;
+   assign @rns0.a0_8@ = @rns0.a0*8@;
+   assign @rns0.y1_8@ = @rns0.y1*8@;
+   assign @rns0.a1_8@ = @rns0.a1*8@;
+   always_comb begin
+      case (x[17:15])
+	//.for i in range(8):{
+	3'd@i@: @rns0.xin00_rns@ = @rns0(i)@;
+	//.}
+      endcase // case (x[17:15])
+      case (x[8:6])
+	//.for i in range(8):{
+	3'd@i@: @rns0.xin10_rns@ = @rns0(i)@;
+	//.}
+      endcase // case (x[8:6])
+      case (xin00[5:3])
+	//.for i in range(8):{
+	3'd@i@: @rns0.xin01_rns@ = @rns0.y0_8 + i@;
+	//.}
+      endcase
+      case (xin10[5:3])
+	//.for i in range(8):{
+	3'd@i@: @rns0.xin11_rns@ = @rns0.a0_8 + i@;
+	//.}
+      endcase
+      case (xin01[2:0])
+	//.for i in range(8):{
+	3'd@i@: @rns0.xin02_rns@ = @rns0.y1_8 + i@;
+	//.}
+      endcase
+      case (xin11[2:0])
+	//.for i in range(8):{
+	3'd@i@: @rns0.xin12_rns@ = @rns0.a1_8 + i@;
+	//.}
+      endcase
+   end
+   assign @rns0.final_sum_rns@ = @rns0.y2*512 + rns0.a2@;
+   always_ff @@(posedge clk) begin
+      // Stage 0
+      xin00 <= x[14:9];
+      xin10 <= x[5:0];
+      y0 <= xin00_rns;
+      a0 <= xin10_rns;
+      // Stage 1
+      xin01 <= xin00[2:0];
+      xin11 <= xin10[2:0];
+      y1 <= xin01_rns;
+      a1 <= xin11_rns;
+      // Stage 2
+      y2 <= xin02_rns;
+      a2 <= xin12_rns;
+      // Stage 3
+      y <= final_sum_rns;
+   end
+
+   //.if dumpvcd:{
+   initial begin
+      $dumpfile("dump.vcd");
+      $dumpvars;
+   end      
+   //.}
+
+   // SV Assertions
+   //.rns0.sva > ''
+   
+endmodule // bin2rns_p
+//.-sec.bin2rns
