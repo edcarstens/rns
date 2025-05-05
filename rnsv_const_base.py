@@ -4,7 +4,7 @@ class rnsv_const_base(rns):
     def __init__(self, x, parent):
         assert(isinstance(x, int))
         self.parent = parent
-        self.name = f"const{x}"
+        self.name = f"{parent.struct_name}_const{x}"
         super().__init__(x, self.parent.base)
         self.declare_and_assign_me()
     def __str__(self):
