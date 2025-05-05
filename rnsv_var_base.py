@@ -61,6 +61,15 @@ class rnsv_var_base:
     def connect_inst(self, other, modname):
         "Subclass must define this"
         pass
+    def decode_slice(self):
+        s = self.my_slice
+        if s is None:
+            return s
+        length = len(self.xmods)
+        start = s.start if s.start else 0
+        stop = s.stop if s.stop else length
+        step = s.step if s.step else 1
+        return start,stop,step
     def resolve_slice(self, s1, s2):
         if s1 is None:
             return s2
@@ -70,15 +79,13 @@ class rnsv_var_base:
             return s1
         raise Exception(f"Slices differ: {s1} vs {s2}")
     def get_slice(self, length, other=None):
-        s = self.my_slice
+        s = self.decode_slice()
         if isinstance(other, type(self)):
-            s = self.resolve_slice(s, other.my_slice)
+            s2 = other.decode_slice()
+            s = self.resolve_slice(s, s2)
         if s is None:
             return 0,length,1
-        start = s.start if s.start else 0
-        stop = s.stop if s.stop else length
-        step = s.step if s.step else 1
-        return start,stop,step
+        return s
     def _call_nops(self, idxs):
         for idx in range(len(self.xmods)):
             if idx not in idxs:

@@ -1,33 +1,48 @@
+//.+fast
 
-//.def norm16(rns1, debug=False):{
+//.def norm16(rns1, rns2, debug=False):{
 //.my_rns1 = rnsv("norm16_rns1", "rns1", rns1.base)
+//.my_rns2 = rnsv("norm16_rns1", "rns2", rns2.base)
 //.xmod11 = my_rns1.xmod('xmod11', 11)
-//.+sec.norm16("norm16.sv")
+//.module = "norm16"
+//.M = module.upper()
+//.fn = f"{module}.sv"
+//.if not fast[fn]:{
+//.sec_norm16 = Section(fn)
+//.+sec_norm16()
+`ifndef @M@_DEFINED
+`define @M@_DEFINED
 `include "structs.sv"
 //.my_rns1.includes > ''
-module norm16(
-	      output @rns1@ nx,
+module @module@(
+	      output @rns2@ nx,
 	      input @rns1@ x
 );
-   //.nx = my_rns1('no declaration').nx
+   //.nx = my_rns2('no declaration').nx
    //.x = my_rns1('no declaration').x
    //.my_rns1.declarations > ''
    //.my_rns1.instances > ''
    //.my_rns1.comb > ''
-   //.# assign @t0:=xmod11.t0@ = @(x[1] - (t0 << x[0]))/rns1.base[0]@;
-   //.# assign @t0:=xmod11.t0@ = @(x[1] - (xmod11 << x[0]))/rns1.base[0]@;
-   assign @t0:=xmod11.t0@ = @(x[1] - (x[0] >> 11))/rns1.base[0]@;
-   assign @nx:=my_rns1.nx@ = @nx << ((x[0] >> 16) + (t0 >> 16))@;
-   //.#assign @nx:=my_rns1.nx@ = @((x[0] >> 16) + (t0 >> 16)) >> my_rns1@;
+   //.##assign @t0:=xmod11.t0@ = @(x[1] - (t0 << x[0]))/rns1.base[0]@;  // works
+   //.##assign @t0:=xmod11.t0@ = @(x[1] - (xmod11 << x[0]))/rns1.base[0]@; // works
+   //.##assign @t0:=xmod11.t0@ = @(x[1] - (x[0] >> 11))/rns1.base[0]@; // works
+   //.##assign @t0:=xmod11.t0@ = @(x[1] - (x[0] >> xmod11))/rns1.base[0]@; // works
+   assign @t0:=xmod11.t0@ = @(x[1] - (x[0] >> t0))/rns1.base[0]@; // works
+   assign @nx@ = @nx << ((x[0] >> 16) + (t0 >> 16))@;
+   //.#assign @nx@ = @((x[0] >> 16) + (t0 >> 16)) >> my_rns2@;
    //.if debug:{
    always @@(t0) begin
       $display("%m: t0: %b", t0);
    end
    //.}
 endmodule // norm16
-//.-sec.norm16
+`endif
+//.-sec_norm16
 //.+rns1.includes
 `include "norm16.sv"
 //.-rns1.includes
-//.return "norm16"
+//.} # end if
+//.return module
 //.} # end def norm16
+
+//.-fast

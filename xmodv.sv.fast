@@ -31,5 +31,9 @@
 //.  } # end if
 //.  return self.constants[x].name
 //. } # end def __call__
+//. def __lshift__(self, other):{
+//.  assert(isinstance(other, rnsv_xmod))
+//.  return (other >> self)
+//. } # end def __lshift__
 //.} # end class xmodv
 //.-fast

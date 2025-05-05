@@ -1,4 +1,8 @@
-//.def rnsmon(rns0, varname):{
+//.+fast
+//.## TODO: Provide support for rnsv_xmod type var
+//.def rnsmon(var):{
+//.assert(isinstance(var, rnsv_var))
+//.rns0 = var.parent
 //.module = f"rnsmon_{rns0}"
 //.fn = f"{module}.sv"
 //.if not fast[fn]:{
@@ -28,11 +32,15 @@ module @module@(
 endmodule // @module@
 `endif
 //.-sec_rnsmon
+//.} # end if
+//.if not f"{module}.sv" in rns0.includes.getText():{
 //.+rns0.includes
 `include "@module@.sv"
 //.-rns0.includes
 //.} # end if
 //.+rns0.instances
-@module@ inst_mon_@varname@(@varname@,"@varname@");
+@module@ inst_mon_@var.name@(@var.name@,"@var.name@");
 //.-rns0.instances
 //.} # end def
+
+//.-fast

@@ -63,6 +63,9 @@
 //.  return rv
 //. } # end def __getitem__
 //. def __lshift__(self, other):{
+//.  if isinstance(other, rnsv):{
+//.   return (other >> self)
+//.  }
 //.  assert(isinstance(other, type(self.xmods[0])))
 //.  self.n = self.parent.gen_var_name()
 //.  start,stop,step = self.get_slice(len(self.xmods))
@@ -88,7 +91,6 @@ assign @self.n@.x@self.xmods[i].m@ = @other.map_to_mod(self.xmods[i].m)@;
 //.  +self.parent.comb
 //-----------------------------------------------------------------
 // mapping @self.name@ to @other.struct_name@ @self.n@
-//.  print(f"mapping {self.name} to {other.struct_name} {self.n}")
 //.  for i in range(start, stop, step):{
 //.   m = self.xmods[i].m
 //.   if m in base:{

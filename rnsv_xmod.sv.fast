@@ -13,7 +13,6 @@ logic [@m-1@:0] @name@;
 //. m = self.m
 //. if self.parent:{
 //.  n = f"{self.parent.n}.x{m}"
-//.  print(n)
 //. }
 //. else:{
 //.  n = self.rnsv_base.gen_var_name()
@@ -83,9 +82,16 @@ assign @n@= @self.map_to_mod(other)@;
 //. if isinstance(other, type(self)):{
 //.  return self >> other.m
 //. }
+//. if isinstance(other, xmodv):{
+//.  return self >> other.m
+//. }
 //. if isinstance(other, rnsv_var):{
 //.  return other << self
 //. }
 //. raise Exception(f"Type {type(other)} not supported")
 //.} # end def __rshift__
+//.def __lshift__(self, other):{
+//. assert(isinstance(other, type(self)))
+//. return (other >> self)
+//.} # end def __lshift__
 //.} # end class
