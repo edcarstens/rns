@@ -1,0 +1,35 @@
+//.def check(f):{
+if test -f @f@.sv; then 
+ echo Diffing @f@.sv ..
+ diff bkp @f@.sv
+fi
+//.}
+//.+sec.files
+structs
+rnsmod16
+rns2bin
+rns0_modadd
+rnsmon_rns0
+rnsmon_rns1
+rnsmon_rns2
+rnsmon_xmod
+modadd_9
+modadd_8
+modadd_7
+modadd_5
+modadd_17
+modadd_13
+modadd_11
+rnsmod4096
+rnsmod256
+rns2_modadd
+rns1_modadd
+norm16
+modadd_16
+//.-sec.files
+//.+sec.check('check')
+//.for line in sec.files.getLines():{
+//. check(line)
+//.}
+//.-sec.check
+//.fast.writeFiles()

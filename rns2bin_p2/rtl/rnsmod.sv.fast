@@ -1,0 +1,56 @@
+//.+fast
+
+//.def rnsmod(rns0, mm):{
+//.my_rns0 = rnsv(f"rnsmod{mm}_{rns0}", rns0.struct_name, rns0.base)
+//.xmod1 = my_rns0.xmod('xmod1', my_rns0.base[1])
+//.xmod2 = my_rns0.xmod('xmod2', my_rns0.base[2])
+//.xmod3 = my_rns0.xmod('xmod3', my_rns0.base[3])
+//.xmod4 = my_rns0.xmod('xmod4', my_rns0.base[4])
+//.sec_rnsmod = Section(f"rnsmod{mm}.sv")
+//.+sec_rnsmod()
+// rnsmod @mm@ algorithm for rns2bin
+`include "structs.sv"
+//.my_rns0.includes > ''
+module rnsmod@mm@(
+		  output rns0 x3,  // only has mods 17 and 11
+		  input	 rns0 xin, // mods 9,5,7,13,17,11
+		  input logic clk
+		  );
+   //.xin = my_rns0('no declaration').xin
+   //.x3 = my_rns0('no declaration').x3
+   //.my_rns0.declarations > ''
+   //.my_rns0.instances > ''
+   //.my_rns0.comb > ''
+   assign @k0:=xmod1.k0@ = @-xin[1]/mm@;
+   assign @k0mm:=my_rns0.k0mm@ = @(k0mm[2:] << k0) * mm@;
+   always @@(posedge clk) begin
+      @x0:=my_rns0.x0@ <= @(xin[2:] + k0mm)/my_rns0.base[1]@;
+   end
+   // next iteration of rnsmod algorithm
+   assign @k1:=xmod2.k1@ = @-x0[2]/mm@;
+   assign @k1mm:=my_rns0.k1mm@ = @(k1mm[3:] << k1) * mm@;
+   always @@(posedge clk) begin
+      @x1:=my_rns0.x1@ <= @(x0[3:] + k1mm)/my_rns0.base[2]@;
+   end
+   // next iteration of rnsmod algorithm
+   assign @k2:=xmod3.k2@ = @-x1[3]/mm@;
+   assign @k2mm:=my_rns0.k2mm@ = @(k2mm[4:] << k2) * mm@;
+   always @@(posedge clk) begin
+      @x2:=my_rns0.x2@ <= @(x1[4:] + k2mm)/my_rns0.base[3]@;
+   end
+   // next iteration of rnsmod algorithm
+   assign @k3:=xmod4.k3@ = @-x2[4]/mm@;
+   assign @k3mm:=my_rns0.k3mm@ = @(k3mm[5:] << k3) * mm@;
+   always @@(posedge clk) begin
+      @x3:=my_rns0.x3@ <= @(x2[5:] + k3mm)/my_rns0.base[4]@;
+   end
+
+endmodule
+//.-sec_rnsmod
+//.+rns0.includes
+`include "rnsmod@mm@.sv"
+//.-rns0.includes
+//.return f"rnsmod{mm}"
+//.} # end def rnsmod
+
+//.-fast

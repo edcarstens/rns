@@ -6,6 +6,7 @@
 ///fast.include("structs.sv.fast")
 ///fast.include("rnsv_modadd.sv.fast")
 ///fast.include("rnsv_modmul.sv.fast")
+///fast.include("rnsv_pipeline.sv.fast")
 //.+fast
 //.class rnsv:{
 //. def __init__(self, name, struct_name, base):{

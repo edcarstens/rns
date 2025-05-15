@@ -1,0 +1,106 @@
+//.+fast
+
+//.class rnsv_pipeline(Section):{
+//. rex1 = re.compile(r"(\w+)_stage(\d+)\[(\d+):(\d+)\]")
+//. rex2 = re.compile(r"(\w+)_stage(\d+)")
+//. def stage_name(self, i, bits=True):{
+//.  sbits = ""
+//.  if bits and self.hibit is not None:{
+//.   sbits = f"[{self.hibit}:{self.lobit}]"
+//.  } # end if
+//.  stage = ""
+//.  if i:{
+//.   stage = f"_stage{i}"
+//.  }
+//.  return f"{self.vname}{stage}{sbits}"
+//. } # end def
+//. def process(self):{
+//.  if not self.vname:{
+// rnsv_pipeline: ERROR - no variable name set (use pipeline call to set)
+//.   return
+//.  }
+//.  rex3 = re.compile(r"\s*" + self.vname + r"_stage(\d+)")
+//.  stages = []
+//.  buf = ""
+//.  for line in self.getLines():{
+//.   if m:=re.match(rex3, line):{
+//.    stages.append(int(m.group(1)))
+//.    buf += line.lstrip() + fast.newline
+//.   } # end if
+//.  } # end for
+//.  for i in range(1,self.last_stage+1):{
+//.   if i not in stages:{
+//.    src = self.stage_name(i-1)
+//.    buf += self.stage_name(i) + " <= " + src + ";" + fast.newline
+//.   } # end if
+//.  } # end for
+//.  self.setText(buf)
+//.  self >> ''
+//.  self.setText('')
+//. } # end def process
+//. def __call__(self, x, rnsv_base=None, encode=True):{
+//.  self.hibit = None
+//.  self.encode = encode
+//.  if isinstance(x, str):{
+//.   self.encode = False
+//.   if m:=re.match(self.rex1, x):{
+//.    self.vname = m.group(1)
+//.    self.last_stage = int(m.group(2))
+//.    self.hibit = int(m.group(3))
+//.    self.lobit = int(m.group(4))
+//.    if rnsv_base is not None:{
+//.     +rnsv_base.declarations
+//.     for i in range(1,self.last_stage+1):{
+logic [@self.hibit@:@self.lobit@] @self.stage_name(i,False)@;
+//.     } # end for
+//.     -rnsv_base.declarations
+//.    } # end if
+//.   } # end if
+//.   elif m:=re.match(self.rex2, x):{
+//.    self.vname = m.group(1)
+//.    self.last_stage = int(m.group(2))
+//.    if rnsv_base is not None:{
+//.     +rnsv_base.declarations
+//.     for i in range(1,self.last_stage+1):{
+logic @self.stage_name(i)@;
+//.     } # end for
+//.     -rnsv_base.declarations
+//.    } # end if
+//.   } # end elif
+//.   else:{
+//.    self.vname = None
+// rnsv_pipeline: ERROR - syntax error in variable name, @x@
+//.   }
+//.   return self
+//.  } # end if
+//.  assert(isinstance(x, rnsv_var))
+//.  rns0 = x.parent
+//.  self.rns0 = rns0
+//.  xname = x.name
+//.  if m:=re.match(self.rex1, xname):{
+//.   self.vname = m.group(1)
+//.   self.last_stage = int(m.group(2))
+//.   self.hibit = int(m.group(3))
+//.   self.lobit = int(m.group(4))
+//.   for i in range(1,self.last_stage+1):{
+//.    getattr(rns0, self.stage_name(i))
+//.   } # end for
+//.  }
+//.  elif m:=re.match(self.rex2, xname):{
+//.   self.vname = m.group(1)
+//.   self.last_stage = int(m.group(2))
+//.   for i in range(1,self.last_stage+1):{
+//.    getattr(rns0, self.stage_name(i))
+//.   } # end for
+//.  } # end elif
+//.  else:{
+//.   self.vname = None
+// rnsv_pipeline: ERROR - syntax error in variable name, @xname@
+//.  }
+//.  return self
+//. } # end def __call__
+//.} # end class
+
+//.pipeline = rnsv_pipeline('pipeline')
+
+//.-fast

@@ -1,0 +1,138 @@
+///fast.include("rnsmod.sv.fast")
+///fast.include("norm16.sv.fast")
+///fast.include("rnsmon.sv.fast")
+//.#       0  1 2 3  4  5  6
+//.base = [16,9,5,7,13,17,11]
+//.rns0 = rnsv('rns2bin_rns0', 'rns0', base)
+//.rns1 = rnsv('rns2bin_rns0', 'rns1', [17,11])
+//.rns2 = rnsv('rns2bin_rns0', 'rns2', [17,11,16])
+//.xmod16 = rns0.xmod('xmod16', 16)
+//.+sec.rns2bin('rns2bin.sv')
+// rns2bin (RNS-to-Binary converter)
+//.#fast()
+//.include_structs(rns0.base, "rns0")
+//.include_structs(rns1.base, "rns1")
+//.include_structs(rns2.base, "rns2")
+//.rns0.includes > ''
+`include "encoder.sv"
+module rns2bin(
+	       output logic [22:0] y,
+	       output logic ready,
+	       input rns0 x,
+	       input logic clk,
+	       input logic rst
+);
+   //.x = rns0('no declaration').x
+   //.x03 = rns0.x03
+   //.x13 = rns0.x13
+   //.x23 = rns0.x23
+   //.nx0 = rns2.nx0
+   //.nx1 = rns2.nx1
+   //.nx2 = rns2.nx2
+   //.nx3 = rns2.nx3
+   //.rns0.declarations > ''
+   logic		   carry0, carry1, carry2;
+   logic [22:0]		   y_int;
+   //.rns0.instances > ''
+   // monitors
+   //.#rnsmon(x03)
+   //.#rnsmon(x13)
+   //.#rnsmon(x23)
+   // convert first residue (mod 8) to y[2:0]
+   encoder #(4,16) ienc0(.y(y_int[3:0]), .x(x.x16));
+   encoder #(4,16) ienc1(.y(y_int[7:4]), .x(d0));
+   encoder #(4,16) ienc2(.y(y_int[11:8]), .x(d1));
+   encoder #(4,16) ienc3(.y(y_int[15:12]), .x(d2));
+   encoder #(4,16) ienc4(.y(y_int[19:16]), .x(d3));
+   encoder #(3, 8) ienc5(.y(y_int[22:20]), .x(d4[7:0]));
+   // rnsmod algorithms                                      // Clk Cycles
+   @rnsmod(rns0, 16)@ inst_rnsmod16(.x3(x03), .xin(x1), .clk(clk));     // 5
+   @rnsmod(rns0, 256)@ inst_rnsmod256(.x3(x13), .xin(x1), .clk(clk));   // 5
+   @rnsmod(rns0, 4096)@ inst_rnsmod4096(.x3(x23), .xin(x1), .clk(clk)); // 5
+   @norm16(rns1,rns2)@ inst_norm3(.nx(nx0), .x(x03_16), .clk(clk));     // 5+2 = 7
+   @norm16(rns1,rns2)@ inst_norm7(.nx(nx1), .x(x13_16), .clk(clk));     // 8+2 = 10
+   @norm16(rns1,rns2)@ inst_norm11(.nx(nx2), .x(x23_16), .clk(clk));    // 11+2= 13
+   @norm16(rns1,rns2)@ inst_norm15(.nx(nx3), .x(r3), .clk(clk));        // 15+2 = 17 
+   //.rns0.comb > ''
+   assign @nx0_rns1:=rns1.nx0_rns1@ = @nx0[0:2] >> rns1@;
+   assign @x03_16:=rns1.x03_16@ = @x03[5:] >> rns1@;
+   assign @x1_rns1:=rns1.x1_rns1@ = @rns0.x1[5:] >> rns1@;
+   always @@(posedge clk) begin
+      @x1:=rns0.x1@ <= @(x[1:] - x[0])/base[0]@;                  // 1
+      //.+pipeline(rns1.x13_stage2)
+      @rns1.x13_stage1@ <= @x13[5:] >> rns1@;                     // 6
+      //.-pipeline
+      @x13_16:=rns1.x13_16@ <= @(rns1.x13_stage2 - nx0_rns1)/16@; // 8
+      //.+pipeline(rns1.x23_stage2)
+      @rns1.x23_stage1@ <= @x23[5:] >> rns1@;                     // 6
+      //.-pipeline
+      @x23_16_term1:=rns1.x23_16_1@ <= @rns1.x23_stage2 - nx0_rns1@;   // 8
+      //.+pipeline(rns1.x23_16_term1_stage2)
+      @rns1.x23_16_term1_stage1@ <= @x23_16_term1@; // 9
+      //.-pipeline
+      @x23_16:=rns1.x23_16@ <= @(rns1.x23_16_term1_stage2 - (nx1 >> rns1)*16)/256@; // 11
+      //.+pipeline("carry0_stage3", rns1)
+      //.-pipeline
+      //.+pipeline("carry1_stage3", rns1)
+      //.-pipeline
+      //.+pipeline(rns2.r0s_stage3)
+      //.-pipeline
+      @rns2.r_term1@ <= @rns2.r0s_stage3[:2] + rns2.r1s[:2]*16@; // 11
+      //.+pipeline(rns2.r_term1_stage2)
+      //.-pipeline
+      @rns1.r@ <= @(rns2.r_term1_stage2 + rns2.r2s[:2]*256) >> rns1@; // 14
+      //.+pipeline(rns1.x1_rns1_stage13)
+      //.-pipeline
+      @r3:=rns1.r3@ <= @(rns1.x1_rns1_stage13 - rns1.r)/4096@; // 15
+      //.+pipeline(rns1.r3_stage2)
+      //.-pipeline
+      @r4:=rns1.r4@ <= @(rns1.r3_stage2 - (nx3 >> rns1))/16@; // 18
+      //.pipeline("y_int_stage18[23:0]", rns1)  ## for declarations
+      //.+pipeline("y_int_stage18[3:0]")
+      //.-pipeline
+      //.+pipeline("y_int_stage11[7:4]")
+      //.-pipeline
+      //.+pipeline("y_int_stage8[11:8]")
+      //.-pipeline
+      //.+pipeline("y_int_stage5[15:12]")
+      //.-pipeline
+      //.+pipeline("y_int_stage1[19:16]")
+      //.-pipeline
+      y <= {y_int[23:20], y_int_stage1[19:16], y_int_stage5[15:12], y_int_stage8[11:8], y_int_stage11[7:4], y_int_stage18[3:0]};
+   end
+   // Account for sign and special zero cases
+   assign carry0 = @(nx0[2] != 0)@;
+   //.##assign @ai_nx0:=rns2.ai_nx0@ = @-nx0@;
+   assign @ai_nx1:=rns2.ai_nx1@ = @-nx1@;
+   assign @ai_nx2:=rns2.ai_nx2@ = @-nx2@;
+   
+   assign @r0s:=rns2.r0s@ = !carry0 ? @rns2(0)@ : @16 - nx0@; // 7
+   assign carry1 = carry0_stage3 || @(nx1[2] != 0)@; // 10
+   assign @r1s:=rns2.r1s@ = !carry1 ? @rns2(0)@ :
+		carry0_stage3 ? @15 + ai_nx1@ : @16 + ai_nx1@; // 10
+   assign carry2 = carry1_stage3 || @(nx2[2] != 0)@; // 13
+   assign @r2s:=rns2.r2s@ = !carry2 ? @rns2(0)@ :
+		carry1_stage3 ? @15 + ai_nx2@ : @16 + ai_nx2@; // 13
+   //.rnsmon(nx0)
+   
+   // Convert to mod 16 for encoders
+   assign @d0:=xmod16.d0@ = @r0s[2]@; // 7
+   assign @d1:=xmod16.d1@ = @r1s[2]@; // 10
+   assign @d2:=xmod16.d2@ = @r2s[2]@; // 13
+   assign @d3:=xmod16.d3@ = @nx3[2]@; // 17
+   assign @d4:=xmod16.d4@ = @r4[0] >> 16@; // 18
+   
+   //.rnsmon(d3)
+   
+   //.if dumpvcd:{
+   initial begin
+      $dumpfile("dump.vcd");
+      $dumpvars;
+   end      
+   //.}
+
+   // SV Assertions
+   //.rns0.sva > ''
+
+endmodule // rns2bin
+//.-sec.rns2bin

@@ -1,0 +1,49 @@
+//.+fast
+
+//.def norm16(rns1, rns2, debug=False):{
+//.module = "norm16"
+//.M = module.upper()
+//.fn = f"{module}.sv"
+//.if not fast[fn]:{
+//.my_rns1 = rnsv(f"norm16_{rns1}_{rns2}", rns1.struct_name, rns1.base)
+//.my_rns2 = rnsv(f"norm16_{rns1}_{rns2}", rns2.struct_name, rns2.base)
+//.my_xmod11 = my_rns1.xmod('my_xmod11', 11)
+//.my_xmod16 = my_rns1.xmod('my_xmod16', 16)
+//.sec_norm16 = Section(fn)
+//.+sec_norm16()
+`ifndef @M@_DEFINED
+`define @M@_DEFINED
+`include "structs.sv"
+//.my_rns1.includes > ''
+module @module@(
+		output	    @my_rns2@ nx,
+		input	    @my_rns1@ x,
+		input logic clk
+);
+   //.nx = my_rns2('no declaration').nx
+   //.x = my_rns1('no declaration').x
+   //.my_rns1.declarations > ''
+   //.my_rns1.instances > ''
+   //.my_rns1.comb > ''
+   
+   always @@(posedge clk) begin
+      @t0:=my_xmod11.t0@ <= @(x[1] - (x[0] >> t0))/my_rns1.base[0]@;
+      @my_xmod16.x0_stage1@ <= @x[0] >> 16@;
+      @my_rns2.nx@ <= @nx << (my_xmod16.x0_stage1 + (t0 >> 16))@;
+   end
+   //.if debug:{
+   always @@(t0) begin
+      $display("%m: t0: %b", t0);
+   end
+   //.}
+endmodule // norm16
+`endif
+//.-sec_norm16
+//.+rns1.includes
+`include "norm16.sv"
+//.-rns1.includes
+//.} # end if
+//.return module
+//.} # end def norm16
+
+//.-fast
