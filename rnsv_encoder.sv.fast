@@ -1,0 +1,27 @@
+//.+fast
+//.import math
+//.def rnsv_encoder(rns0):{
+//. module = rns0.struct_name + "_encoder"
+//. fn = f"{module}.sv"
+//. if not fast[fn]:{
+//. sec_rnsv_encoder = Section(fn)
+//. +sec_rnsv_encoder()
+module @module@(
+		output @rns0@_enc y,
+		input @rns0@ x
+		);
+
+//. for m in rns0.base:{
+//.  clog2 = math.ceil(math.log2(m))
+   encoder #(.SZY(@clog2@),.SZX(@m@)) i_enc@m@(.y(y.x@m@), .x(x.x@m@));
+//. } # end for m
+   
+endmodule
+//. -sec_rnsv_encoder
+//. +rns0.includes
+`include "@fn@"
+//. -rns0.includes
+//. return module
+//.} # end if
+//.} # end def
+//.-fast

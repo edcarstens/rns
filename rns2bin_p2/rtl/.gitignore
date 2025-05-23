@@ -1,3 +1,4 @@
+*~
 modadd*.sv
 norm16.sv
 rns*modadd.sv
@@ -7,3 +8,5 @@ rnsmon*.sv
 structs.sv
 check
 bkp/
+rns*_decoder.sv
+rns*_encoder.sv

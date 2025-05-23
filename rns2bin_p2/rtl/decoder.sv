@@ -1,3 +1,6 @@
+`ifndef DECODER_DEFINED
+`define DECODER_DEFINED
+
 module decoder #(parameter SZY=8, parameter SZX=3) (
 	    output logic [SZY-1:0] y,
 	     input logic [SZX-1:0] x
@@ -7,3 +10,5 @@ module decoder #(parameter SZY=8, parameter SZX=3) (
    end
 
 endmodule // decoder
+
+`endif //  `ifndef DECODER_DEFINED

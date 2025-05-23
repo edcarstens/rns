@@ -1,0 +1,28 @@
+//.+fast
+//.import math
+//.def rnsv_decoder(rns0):{
+//. module = rns0.struct_name + "_decoder"
+//. fn = f"{module}.sv"
+//. if not fast[fn]:{
+//. sec_rnsv_decoder = Section(fn)
+//. +sec_rnsv_decoder()
+`include "decoder.sv"
+module @module@(
+		output @rns0@ y,
+		input @rns0@_enc x
+		);
+
+//. for m in rns0.base:{
+//.  clog2 = math.ceil(math.log2(m))
+   decoder #(.SZY(@m@),.SZX(@clog2@)) i_dec@m@(.y(y.x@m@), .x(x.x@m@));
+//. } # end for m
+   
+endmodule
+//. -sec_rnsv_decoder
+//. +rns0.includes
+`include "@fn@"
+//. -rns0.includes
+//. return module
+//.} # end if
+//.} # end def
+//.-fast

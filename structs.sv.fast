@@ -1,4 +1,5 @@
 //.+fast
+//.import math
 //.def include_structs(base, name):{
 //. if not len(sec.structs.getText()):{
 //. +sec.structs("structs.sv")
@@ -15,6 +16,12 @@ typedef struct packed {
    logic [@m-1@:0] x@m@;
    //.}
 } @name@;
+typedef struct packed {
+   //.for m in base:{
+   //. clog2 = math.ceil(math.log2(m))
+   logic [@clog2-1@:0] x@m@;
+   //.}
+} @name@_enc;
 //.-sec.structs.structs
 //.} # end def
 //.-fast

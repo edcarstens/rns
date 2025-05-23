@@ -87,7 +87,7 @@ module rns2bin(
       //.+pipeline(rns1.r3_stage2)
       //.-pipeline
       @r4:=rns1.r4@ <= @(rns1.r3_stage2 - (nx3 >> rns1))/16@; // 18
-      //.pipeline("y_int_stage18[23:0]", rns1)  ## for declarations
+      //.pipeline("y_int_stage18[22:0]", rns1)  ## for declarations
       //.+pipeline("y_int_stage18[3:0]")
       //.-pipeline
       //.+pipeline("y_int_stage11[7:4]")
@@ -98,7 +98,7 @@ module rns2bin(
       //.-pipeline
       //.+pipeline("y_int_stage1[19:16]")
       //.-pipeline
-      y <= {y_int[23:20], y_int_stage1[19:16], y_int_stage5[15:12], y_int_stage8[11:8], y_int_stage11[7:4], y_int_stage18[3:0]};
+      y <= {y_int[22:20], y_int_stage1[19:16], y_int_stage5[15:12], y_int_stage8[11:8], y_int_stage11[7:4], y_int_stage18[3:0]};
    end
    // Account for sign and special zero cases
    assign carry0 = @(nx0[2] != 0)@;
